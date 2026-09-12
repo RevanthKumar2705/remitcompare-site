@@ -80,11 +80,16 @@
         '<td class="num eff">' + fmt(q.effective_rate, 4) + "</td>" +
         '<td class="num cost"><span class="' + costCls(q.total_cost_pct) + '">' +
           (q.total_cost_pct != null ? fmt(q.total_cost_pct, 2) + "%" : "—") + "</span></td>" +
+        '<td><span class="method-chip">' + (q.delivery_estimate ? esc(q.delivery_estimate) : "—") + "</span></td>" +
         "<td>" + nreCell(q.supports_nre) + "</td>" +
         "<td>" + sourceBadge(q.data_source) + "</td>" +
         "</tr>";
     }).join("");
-    rows.innerHTML = html || '<tr><td colspan="12">No fresh quotes right now — check back within the hour.</td></tr>';
+    rows.innerHTML = html || '<tr><td colspan="13">No fresh quotes right now — check back within the hour.</td></tr>';
+
+    var noteEl = document.getElementById("note");
+    if (comp.note) { noteEl.textContent = comp.note; noteEl.hidden = false; }
+    else { noteEl.hidden = true; }
   }
 
   fetch("data.json", { cache: "no-store" })
@@ -118,6 +123,6 @@
     })
     .catch(function (err) {
       document.getElementById("rows").innerHTML =
-        '<tr><td colspan="12">Could not load rate data (' + esc(err.message) + "). Try refreshing.</td></tr>";
+        '<tr><td colspan="13">Could not load rate data (' + esc(err.message) + "). Try refreshing.</td></tr>";
     });
 })();

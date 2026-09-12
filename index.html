@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RemitCompare — which provider actually delivers the most rupees?</title>
   <meta name="description" content="Honest USD→INR money transfer comparison. Ranked by rupees actually received per dollar paid — never by advertised rates or signup promos. No affiliate links.">
+  <link rel="canonical" href="https://revanthkumar2705.github.io/remitcompare-site/">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>₹</text></svg>">
 </head>
@@ -36,6 +37,8 @@
 
     <section id="best-card" class="best-card" hidden></section>
 
+    <p class="note" id="note" hidden></p>
+
     <section class="table-wrap">
       <table id="results">
         <thead>
@@ -50,6 +53,7 @@
             <th class="num">Recipient gets</th>
             <th class="num">₹ per $</th>
             <th class="num">True cost</th>
+            <th>Speed</th>
             <th>NRE</th>
             <th>Source</th>
           </tr>
@@ -84,6 +88,36 @@
         quote what an ordinary repeat customer gets. Signup bonuses are real one-time savings —
         use them once, then come back here for the honest ranking.
       </p>
+      <h2>Frequently asked questions</h2>
+      <dl class="faq">
+        <dt>What is the mid-market exchange rate?</dt>
+        <dd>The rate banks and currency markets trade at, with no margin added for either side.
+        No consumer service gives you exactly this rate — the gap between it and what you
+        receive is the transfer's true cost, and it is the benchmark every quote here is
+        measured against.</dd>
+
+        <dt>Why do “zero-fee” transfers still cost money?</dt>
+        <dd>Providers that charge no visible fee recover their margin through a worse exchange
+        rate. A $0-fee transfer at a rate 3% below mid-market costs more than an $8-fee
+        transfer at a near-perfect rate. That is why we rank by rupees actually received per
+        dollar paid, never by the fee line.</dd>
+
+        <dt>Do these rankings include new-customer promotional rates?</dt>
+        <dd>No — deliberately. Most apps boost the exchange rate for a first transfer only,
+        capped and one per customer. If you send money regularly, that rate is not your rate.
+        Every quote here is the standard rate an ordinary repeat customer gets.</dd>
+
+        <dt>Can I send to an NRE account?</dt>
+        <dd>Not with every provider. The NRE column marks services confirmed to deposit into
+        NRE (Non-Resident External) accounts with a ✓; a ✗ means they cannot, and ? means we
+        have not verified it yet.</dd>
+
+        <dt>How fresh is this data?</dt>
+        <dd>Quotes are collected automatically every hour from provider APIs and live
+        calculators, and the page shows the collection time under the table. Rates move
+        constantly, so always confirm the final quote with the provider before sending.</dd>
+      </dl>
+
       <p class="disclaimer">
         Rates move constantly; confirm the final quote with the provider before sending.
         RemitCompare is an independent comparison tool. It never moves money, holds funds, or
@@ -98,6 +132,49 @@
     </div>
   </footer>
 
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "RemitCompare",
+        "url": "https://revanthkumar2705.github.io/remitcompare-site/",
+        "description": "Independent USD to INR money transfer comparison ranked by rupees actually received per dollar paid. Standard repeat-customer rates only; no affiliate links."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the mid-market exchange rate?",
+            "acceptedAnswer": {"@type": "Answer", "text": "The rate banks and currency markets trade at, with no margin added for either side. No consumer service gives you exactly this rate — the gap between it and what you receive is the transfer's true cost, and it is the benchmark every quote here is measured against."}
+          },
+          {
+            "@type": "Question",
+            "name": "Why do zero-fee transfers still cost money?",
+            "acceptedAnswer": {"@type": "Answer", "text": "Providers that charge no visible fee recover their margin through a worse exchange rate. A $0-fee transfer at a rate 3% below mid-market costs more than an $8-fee transfer at a near-perfect rate. That is why we rank by rupees actually received per dollar paid, never by the fee line."}
+          },
+          {
+            "@type": "Question",
+            "name": "Do these rankings include new-customer promotional rates?",
+            "acceptedAnswer": {"@type": "Answer", "text": "No — deliberately. Most apps boost the exchange rate for a first transfer only, capped and one per customer. If you send money regularly, that rate is not your rate. Every quote here is the standard rate an ordinary repeat customer gets."}
+          },
+          {
+            "@type": "Question",
+            "name": "Can I send to an NRE account?",
+            "acceptedAnswer": {"@type": "Answer", "text": "Not with every provider. The NRE column marks services confirmed to deposit into NRE (Non-Resident External) accounts; some providers cannot deposit to NRE accounts at all."}
+          },
+          {
+            "@type": "Question",
+            "name": "How fresh is this data?",
+            "acceptedAnswer": {"@type": "Answer", "text": "Quotes are collected automatically every hour from provider APIs and live calculators, and the page shows the collection time under the table. Rates move constantly, so always confirm the final quote with the provider before sending."}
+          }
+        ]
+      }
+    ]
+  }
+  </script>
   <script src="app.js"></script>
 </body>
 </html>

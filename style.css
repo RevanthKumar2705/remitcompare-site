@@ -129,7 +129,10 @@ td.cost { font-variant-numeric: tabular-nums; }
 .nre-unk { color: var(--muted); }
 
 /* ---------- text sections ---------- */
+.note { color: var(--gold); font-size: 0.85rem; margin: -8px 2px 12px; }
 .updated { color: var(--muted); font-size: 0.85rem; margin: 12px 2px 34px; }
+.faq dt { font-weight: 700; margin-top: 16px; }
+.faq dd { margin: 4px 0 0; color: #33443d; }
 .method { max-width: 720px; margin-bottom: 44px; }
 .method h2 { font-size: 1.05rem; margin: 26px 0 6px; }
 .method p { margin: 6px 0; color: #33443d; }
