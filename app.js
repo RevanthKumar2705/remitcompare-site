@@ -1,4 +1,4 @@
-/* Renders data.json into the comparison table. No frameworks, no build step. */
+/* Renders data.json into the landing page. No frameworks, no build step. */
 (function () {
   "use strict";
 
@@ -41,6 +41,49 @@
     });
   }
 
+  function renderStats(corridor, generatedAt) {
+    var providers = {}, quotes = 0;
+    Object.keys(corridor.amounts).forEach(function (k) {
+      (corridor.amounts[k].quotes || []).forEach(function (q) {
+        providers[q.display_name] = true; quotes++;
+      });
+    });
+    var when = new Date(generatedAt);
+    var ageMin = Math.max(0, Math.round((Date.now() - when.getTime()) / 60000));
+    document.getElementById("stats").innerHTML =
+      '<span class="stat"><b>' + Object.keys(providers).length + "</b> providers compared</span>" +
+      '<span class="stat"><b>' + quotes + "</b> live quotes on this page</span>" +
+      '<span class="stat"><b>' + (ageMin < 60 ? ageMin + " min" : Math.round(ageMin / 60) + " h") + "</b> since last collection</span>" +
+      '<span class="stat"><b>$0</b> earned from providers</span>';
+  }
+
+  function renderChart(corridor, amountKey) {
+    var comp = corridor.amounts[amountKey];
+    var src = sym(corridor.source_currency);
+    // best (cheapest) option per provider
+    var best = {};
+    (comp.quotes || []).forEach(function (q) {
+      if (q.total_cost_pct == null) return;
+      if (!(q.display_name in best) || q.total_cost_pct < best[q.display_name]) {
+        best[q.display_name] = q.total_cost_pct;
+      }
+    });
+    var entries = Object.keys(best).map(function (name) { return { name: name, cost: best[name] }; });
+    entries.sort(function (a, b) { return a.cost - b.cost; });
+    var max = entries.length ? Math.max.apply(null, entries.map(function (e) { return e.cost; })) : 1;
+
+    document.getElementById("chart-title").textContent =
+      "True cost of a " + src + fmt(amountKey, 0) + " transfer — best option per provider";
+    document.getElementById("cost-chart").innerHTML = entries.map(function (e) {
+      var w = Math.max(2, (e.cost / max) * 100);
+      return '<div class="bar-row" title="' + esc(e.name) + ": " + fmt(e.cost, 2) + '% below mid-market">' +
+        '<span class="bar-label">' + esc(e.name) + "</span>" +
+        '<span class="bar-track"><span class="bar-fill" style="width:' + w + '%"></span></span>' +
+        '<span class="bar-value">' + fmt(e.cost, 2) + "%</span>" +
+        "</div>";
+    }).join("");
+  }
+
   function render(corridor, amountKey) {
     var comp = corridor.amounts[amountKey];
     var src = sym(corridor.source_currency), dst = sym(corridor.target_currency);
@@ -53,15 +96,16 @@
 
     var best = document.getElementById("best-card");
     if (quotes.length) {
-      var q0 = quotes[0];
+      var q0 = quotes[0], qn = quotes[quotes.length - 1];
+      var saved = qn ? q0.receive_amount - qn.receive_amount : 0;
       best.hidden = false;
       best.innerHTML =
         '<span class="label">Best value right now</span>' +
         '<span class="name">' + esc(q0.display_name) + "</span>" +
-        '<span class="stat"><b>' + dst + fmt(q0.receive_amount, 0) + "</b> received</span>" +
-        '<span class="stat"><b>' + fmt(q0.effective_rate, 4) + "</b> " + dst.trim() + " per " + src.trim() + " paid</span>" +
-        (q0.total_cost_pct != null
-          ? '<span class="stat">true cost <b>' + fmt(q0.total_cost_pct, 2) + "%</b> below mid-market</span>"
+        '<span class="stat-item"><b>' + dst + fmt(q0.receive_amount, 0) + "</b> received</span>" +
+        '<span class="stat-item"><b>' + fmt(q0.effective_rate, 4) + "</b> " + dst.trim() + " per " + src.trim() + " paid</span>" +
+        (saved > 1
+          ? '<span class="stat-item savings">' + dst + fmt(saved, 0) + " more than the worst option on this page</span>"
           : "");
     } else {
       best.hidden = true;
@@ -90,6 +134,8 @@
     var noteEl = document.getElementById("note");
     if (comp.note) { noteEl.textContent = comp.note; noteEl.hidden = false; }
     else { noteEl.hidden = true; }
+
+    renderChart(corridor, amountKey);
   }
 
   fetch("data.json", { cache: "no-store" })
@@ -98,28 +144,54 @@
       var corridorKey = Object.keys(data.corridors)[0];
       var corridor = data.corridors[corridorKey];
       var amountKeys = Object.keys(corridor.amounts);
+      var current = amountKeys.indexOf("1000") >= 0 ? "1000" : amountKeys[0];
+
+      function select(key) {
+        current = key;
+        bar.querySelectorAll("button").forEach(function (x) {
+          x.setAttribute("aria-selected", x.dataset.key === key ? "true" : "false");
+        });
+        render(corridor, key);
+      }
 
       var bar = document.getElementById("amounts");
-      amountKeys.forEach(function (key, i) {
+      amountKeys.forEach(function (key) {
         var b = document.createElement("button");
         b.type = "button";
+        b.dataset.key = key;
         b.setAttribute("role", "tab");
-        b.setAttribute("aria-selected", i === 1 || amountKeys.length === 1 ? "true" : "false");
         b.textContent = sym(corridor.source_currency) + fmt(key, 0);
-        b.addEventListener("click", function () {
-          bar.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-selected", "false"); });
-          b.setAttribute("aria-selected", "true");
-          render(corridor, key);
-        });
+        b.addEventListener("click", function () { select(key); });
         bar.appendChild(b);
       });
 
-      var initial = amountKeys.length > 1 ? amountKeys[1] : amountKeys[0];
-      render(corridor, initial);
+      // Hero widget: any typed amount maps to the nearest collected preset.
+      document.getElementById("widget").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        var typed = parseFloat(document.getElementById("amount-input").value);
+        if (!isFinite(typed) || typed <= 0) typed = 1000;
+        var nearest = amountKeys.reduce(function (a, b) {
+          return Math.abs(b - typed) < Math.abs(a - typed) ? b : a;
+        });
+        select(nearest);
+        var noteEl = document.getElementById("note");
+        if (Number(nearest) !== typed) {
+          noteEl.textContent = "Showing quotes for " + sym(corridor.source_currency) + fmt(nearest, 0) +
+            " — the closest amount we collect to your " + sym(corridor.source_currency) + fmt(typed, 0) + ".";
+          noteEl.hidden = false;
+        }
+        document.getElementById("results").scrollIntoView({ behavior: "smooth" });
+      });
+
+      renderStats(corridor, data.generated_at);
+      select(current);
 
       var when = new Date(data.generated_at);
       document.getElementById("updated").textContent =
         "Rates last collected " + when.toLocaleString() + " (your local time). Refreshed hourly.";
+      document.getElementById("chart-caption").textContent =
+        "Chart uses this hour's live quotes (collected " + when.toLocaleString() +
+        "), taking each provider's cheapest option. Lower is better.";
     })
     .catch(function (err) {
       document.getElementById("rows").innerHTML =

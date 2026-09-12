@@ -10,84 +10,149 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>₹</text></svg>">
 </head>
 <body>
+  <nav class="topnav">
+    <div class="container nav-inner">
+      <span class="brand">Remit<span class="brand-accent">Compare</span></span>
+      <div class="nav-links">
+        <a href="#results">Compare</a>
+        <a href="#why">Why compare</a>
+        <a href="#method">How it works</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </div>
+  </nav>
+
   <header class="hero">
-    <div class="container">
-      <p class="brand">RemitCompare</p>
-      <h1>Which provider actually delivers the most&nbsp;rupees?</h1>
-      <p class="tagline">
-        Transfer services hide their margin in two places: a visible fee, or a quietly worse
-        exchange rate. “Zero-fee” usually means the second. We rank every option by one honest
-        number — <strong>rupees received per dollar that leaves your account</strong> — measured
-        against the real mid-market rate.
-      </p>
-      <ul class="trust">
-        <li>No affiliate links — we earn nothing from your choice</li>
-        <li>Repeat-customer rates only — signup promos are excluded</li>
-        <li>Data refreshed hourly</li>
-      </ul>
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <h1>Send dollars to India.<br>Keep more rupees.</h1>
+        <p class="tagline">
+          Transfer apps hide their margin in a visible fee or a quietly worse exchange rate —
+          “zero-fee” usually means the second. We rank every option by one honest number:
+          <strong>rupees received per dollar that leaves your account</strong>, benchmarked
+          against the real mid-market rate.
+        </p>
+        <ul class="trust">
+          <li>No affiliate links — we earn nothing from your choice</li>
+          <li>Repeat-customer rates only — signup promos excluded</li>
+          <li>Refreshed every hour, timestamp shown</li>
+        </ul>
+      </div>
+
+      <form class="widget" id="widget" autocomplete="off">
+        <p class="widget-title">Find the best deal for your transfer</p>
+        <div class="widget-row">
+          <label class="field">
+            <span>Country from</span>
+            <select disabled><option>🇺🇸 United States</option></select>
+          </label>
+          <label class="field">
+            <span>Country to</span>
+            <select disabled><option>🇮🇳 India</option></select>
+          </label>
+        </div>
+        <div class="widget-row">
+          <label class="field grow">
+            <span>You send (USD)</span>
+            <input type="number" id="amount-input" min="1" step="any" value="1000" inputmode="decimal">
+          </label>
+          <button type="submit" class="cta">Compare</button>
+        </div>
+        <p class="widget-hint">More corridors (UK, Canada, UAE → India) coming soon.</p>
+      </form>
     </div>
   </header>
 
+  <section class="stats">
+    <div class="container stats-inner" id="stats"></div>
+  </section>
+
   <main class="container">
-    <section class="controls" aria-label="Send amount">
-      <span class="controls-label">You send</span>
-      <div class="amounts" id="amounts" role="tablist"></div>
-      <div class="midmarket" id="midmarket"></div>
+    <section id="results" class="results">
+      <div class="controls" aria-label="Send amount">
+        <span class="controls-label">You send</span>
+        <div class="amounts" id="amounts" role="tablist"></div>
+        <div class="midmarket" id="midmarket"></div>
+      </div>
+
+      <p class="note" id="note" hidden></p>
+      <section id="best-card" class="best-card" hidden></section>
+
+      <div class="table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th>Provider</th>
+              <th>Pay with</th>
+              <th>Delivery</th>
+              <th class="num">Rate</th>
+              <th class="num">Fee</th>
+              <th class="num">You pay</th>
+              <th class="num">Recipient gets</th>
+              <th class="num">₹ per $</th>
+              <th class="num">True cost</th>
+              <th>Speed</th>
+              <th>NRE</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="updated" id="updated"></p>
     </section>
 
-    <section id="best-card" class="best-card" hidden></section>
-
-    <p class="note" id="note" hidden></p>
-
-    <section class="table-wrap">
-      <table id="results">
-        <thead>
-          <tr>
-            <th class="rank">#</th>
-            <th>Provider</th>
-            <th>Pay with</th>
-            <th>Delivery</th>
-            <th class="num">Rate</th>
-            <th class="num">Fee</th>
-            <th class="num">You pay</th>
-            <th class="num">Recipient gets</th>
-            <th class="num">₹ per $</th>
-            <th class="num">True cost</th>
-            <th>Speed</th>
-            <th>NRE</th>
-            <th>Source</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+    <section id="why" class="why">
+      <div class="why-grid">
+        <div>
+          <h2>Why compare before every transfer?</h2>
+          <p>
+            The gap between the best and worst option is rarely on the fee line — it hides in
+            the exchange rate. On a typical $1,000 transfer the spread between providers is
+            <strong>thousands of rupees</strong>, and the ranking changes as rates move.
+          </p>
+          <p class="chart-note" id="chart-caption"></p>
+        </div>
+        <figure class="chart" aria-label="True cost by provider">
+          <figcaption class="chart-title" id="chart-title">True cost of a transfer, by provider</figcaption>
+          <div id="cost-chart" class="cost-chart"></div>
+        </figure>
+      </div>
     </section>
 
-    <p class="updated" id="updated"></p>
-
-    <section class="method">
+    <section id="method" class="method">
       <h2>How the ranking works</h2>
-      <p>
-        <strong>₹ per $</strong> is the effective rate: rupees received ÷ total dollars paid
-        (including any fee, wherever the provider hides it — some deduct it from the amount you
-        enter, others add it on top). <strong>True cost</strong> is how far that sits below the
-        mid-market rate — the rate the banks trade at, with no margin. That gap is what the
-        transfer really costs you, whatever the fee line says.
+      <div class="cards">
+        <div class="card">
+          <h3>One honest number</h3>
+          <p><strong>₹ per $</strong> is rupees received ÷ total dollars paid — including the
+          fee, wherever the provider hides it. Some deduct it from the amount you enter,
+          others add it on top; we normalise both.</p>
+        </div>
+        <div class="card">
+          <h3>Benchmarked to mid-market</h3>
+          <p><strong>True cost</strong> is how far your effective rate sits below the
+          mid-market rate — the rate banks trade at with no margin. That gap is what the
+          transfer really costs, whatever the fee line says.</p>
+        </div>
+        <div class="card">
+          <h3>No promo tricks</h3>
+          <p>Boosted first-transfer rates are excluded by design. If you send money
+          regularly, that rate is not your rate. Every quote here is what an ordinary
+          repeat customer gets.</p>
+        </div>
+      </div>
+      <p class="sources-legend">
+        <span class="badge src-official">official API</span> provider's own public quote API
+        &nbsp;·&nbsp; <span class="badge src-scrape">provider website</span> read from the live
+        calculator, standard rates
+        &nbsp;·&nbsp; <span class="badge src-indicative">indicative</span> third-party data,
+        approximate until quoted directly
       </p>
-      <h2>Where the numbers come from</h2>
-      <p>
-        <span class="badge src-official">official API</span> — the provider's own public quote API.
-        <span class="badge src-scrape">provider website</span> — read from the provider's live
-        calculator; standard (non-promotional) rates.
-        <span class="badge src-indicative">indicative</span> — third-party comparison data; treat
-        as approximate until we quote the provider directly.
-      </p>
-      <h2>Why promos are excluded</h2>
-      <p>
-        Most apps advertise a boosted exchange rate that applies only to a first transfer, capped
-        and one per customer. If you send money regularly, that rate is not your rate. We always
-        quote what an ordinary repeat customer gets. Signup bonuses are real one-time savings —
-        use them once, then come back here for the honest ranking.
-      </p>
+    </section>
+
+    <section id="faq" class="faq-section">
       <h2>Frequently asked questions</h2>
       <dl class="faq">
         <dt>What is the mid-market exchange rate?</dt>
