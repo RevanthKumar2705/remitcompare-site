@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RemitCompare — which provider actually delivers the most rupees?</title>
+  <meta name="description" content="Honest USD→INR money transfer comparison. Ranked by rupees actually received per dollar paid — never by advertised rates or signup promos. No affiliate links.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>₹</text></svg>">
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <p class="brand">RemitCompare</p>
+      <h1>Which provider actually delivers the most&nbsp;rupees?</h1>
+      <p class="tagline">
+        Transfer services hide their margin in two places: a visible fee, or a quietly worse
+        exchange rate. “Zero-fee” usually means the second. We rank every option by one honest
+        number — <strong>rupees received per dollar that leaves your account</strong> — measured
+        against the real mid-market rate.
+      </p>
+      <ul class="trust">
+        <li>No affiliate links — we earn nothing from your choice</li>
+        <li>Repeat-customer rates only — signup promos are excluded</li>
+        <li>Data refreshed hourly</li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="controls" aria-label="Send amount">
+      <span class="controls-label">You send</span>
+      <div class="amounts" id="amounts" role="tablist"></div>
+      <div class="midmarket" id="midmarket"></div>
+    </section>
+
+    <section id="best-card" class="best-card" hidden></section>
+
+    <section class="table-wrap">
+      <table id="results">
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th>Provider</th>
+            <th>Pay with</th>
+            <th>Delivery</th>
+            <th class="num">Rate</th>
+            <th class="num">Fee</th>
+            <th class="num">You pay</th>
+            <th class="num">Recipient gets</th>
+            <th class="num">₹ per $</th>
+            <th class="num">True cost</th>
+            <th>NRE</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+
+    <p class="updated" id="updated"></p>
+
+    <section class="method">
+      <h2>How the ranking works</h2>
+      <p>
+        <strong>₹ per $</strong> is the effective rate: rupees received ÷ total dollars paid
+        (including any fee, wherever the provider hides it — some deduct it from the amount you
+        enter, others add it on top). <strong>True cost</strong> is how far that sits below the
+        mid-market rate — the rate the banks trade at, with no margin. That gap is what the
+        transfer really costs you, whatever the fee line says.
+      </p>
+      <h2>Where the numbers come from</h2>
+      <p>
+        <span class="badge src-official">official API</span> — the provider's own public quote API.
+        <span class="badge src-scrape">provider website</span> — read from the provider's live
+        calculator; standard (non-promotional) rates.
+        <span class="badge src-indicative">indicative</span> — third-party comparison data; treat
+        as approximate until we quote the provider directly.
+      </p>
+      <h2>Why promos are excluded</h2>
+      <p>
+        Most apps advertise a boosted exchange rate that applies only to a first transfer, capped
+        and one per customer. If you send money regularly, that rate is not your rate. We always
+        quote what an ordinary repeat customer gets. Signup bonuses are real one-time savings —
+        use them once, then come back here for the honest ranking.
+      </p>
+      <p class="disclaimer">
+        Rates move constantly; confirm the final quote with the provider before sending.
+        RemitCompare is an independent comparison tool. It never moves money, holds funds, or
+        collects personal data.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>RemitCompare — an independent, non-commercial comparison. Not financial advice.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
