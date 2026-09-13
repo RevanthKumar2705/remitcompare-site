@@ -41,6 +41,20 @@
     });
   }
 
+  // The cells shared by a provider's main row and its folded payment options.
+  function tailCells(q, src, dst) {
+    return '<td class="num">' + fmt(q.rate, 4) + "</td>" +
+      '<td class="num">' + src + fmt(q.fee, 2) + "</td>" +
+      '<td class="num">' + src + fmt(q.total_paid, 2) + "</td>" +
+      '<td class="num">' + dst + fmt(q.receive_amount, 0) + "</td>" +
+      '<td class="num eff">' + fmt(q.effective_rate, 4) + "</td>" +
+      '<td class="num cost"><span class="' + costCls(q.total_cost_pct) + '">' +
+        (q.total_cost_pct != null ? fmt(q.total_cost_pct, 2) + "%" : "—") + "</span></td>" +
+      '<td><span class="method-chip">' + (q.delivery_estimate ? esc(q.delivery_estimate) : "—") + "</span></td>" +
+      "<td>" + nreCell(q.supports_nre) + "</td>" +
+      "<td>" + sourceBadge(q.data_source) + "</td>";
+  }
+
   function renderStats(corridor, generatedAt) {
     var providers = {}, quotes = 0;
     Object.keys(corridor.amounts).forEach(function (k) {
@@ -94,10 +108,25 @@
       ? "Mid-market rate: <b>" + fmt(comp.mid_market.rate, 4) + "</b> (no-margin benchmark)"
       : "";
 
+    // One row per provider (its cheapest option); the other ways to pay fold
+    // into an expander. Funding method genuinely changes the cost — Wise by
+    // bank is ~1.1%, by credit card ~6.6% — so we keep every option, we just
+    // don't clutter the default view with them.
+    var groups = [], byProvider = {};
+    quotes.forEach(function (q) {
+      if (!(q.provider in byProvider)) {
+        byProvider[q.provider] = { primary: q, extras: [] };
+        groups.push(byProvider[q.provider]);
+      } else {
+        byProvider[q.provider].extras.push(q);
+      }
+    });
+
     var best = document.getElementById("best-card");
-    if (quotes.length) {
-      var q0 = quotes[0], qn = quotes[quotes.length - 1];
-      var saved = qn ? q0.receive_amount - qn.receive_amount : 0;
+    if (groups.length) {
+      var q0 = groups[0].primary;
+      var worst = groups[groups.length - 1].primary;
+      var saved = q0.receive_amount - worst.receive_amount;
       best.hidden = false;
       best.innerHTML =
         '<span class="label">Best value right now</span>' +
@@ -105,31 +134,42 @@
         '<span class="stat-item"><b>' + dst + fmt(q0.receive_amount, 0) + "</b> received</span>" +
         '<span class="stat-item"><b>' + fmt(q0.effective_rate, 4) + "</b> " + dst.trim() + " per " + src.trim() + " paid</span>" +
         (saved > 1
-          ? '<span class="stat-item savings">' + dst + fmt(saved, 0) + " more than the worst option on this page</span>"
+          ? '<span class="stat-item savings">' + dst + fmt(saved, 0) + " more than " + esc(worst.display_name) + "’s best rate</span>"
           : "");
     } else {
       best.hidden = true;
     }
 
-    var html = quotes.map(function (q, i) {
-      return "<tr" + (i === 0 ? ' class="top"' : "") + ">" +
+    var html = groups.map(function (g, i) {
+      var q = g.primary, n = g.extras.length;
+      var head = '<tr class="primary' + (i === 0 ? " top" : "") + '">' +
         '<td class="rank">' + (i + 1) + "</td>" +
-        '<td class="provider">' + esc(q.display_name) + "</td>" +
+        '<td class="provider">' + esc(q.display_name) +
+          (n > 0 ? ' <button type="button" class="expander" data-prov="' + esc(q.provider) +
+                   '">+' + n + " more ways to pay</button>" : "") + "</td>" +
         '<td><span class="method-chip">' + methodLabel(q.funding_method) + "</span></td>" +
         '<td><span class="method-chip">' + methodLabel(q.delivery_method) + "</span></td>" +
-        '<td class="num">' + fmt(q.rate, 4) + "</td>" +
-        '<td class="num">' + src + fmt(q.fee, 2) + "</td>" +
-        '<td class="num">' + src + fmt(q.total_paid, 2) + "</td>" +
-        '<td class="num">' + dst + fmt(q.receive_amount, 0) + "</td>" +
-        '<td class="num eff">' + fmt(q.effective_rate, 4) + "</td>" +
-        '<td class="num cost"><span class="' + costCls(q.total_cost_pct) + '">' +
-          (q.total_cost_pct != null ? fmt(q.total_cost_pct, 2) + "%" : "—") + "</span></td>" +
-        '<td><span class="method-chip">' + (q.delivery_estimate ? esc(q.delivery_estimate) : "—") + "</span></td>" +
-        "<td>" + nreCell(q.supports_nre) + "</td>" +
-        "<td>" + sourceBadge(q.data_source) + "</td>" +
-        "</tr>";
+        tailCells(q, src, dst) + "</tr>";
+      var extra = g.extras.map(function (e) {
+        return '<tr class="extra" data-prov-row="' + esc(e.provider) + '">' +
+          '<td class="rank"></td>' +
+          '<td class="provider sub">↳ ' + esc(e.display_name) + "</td>" +
+          '<td><span class="method-chip">' + methodLabel(e.funding_method) + "</span></td>" +
+          '<td><span class="method-chip">' + methodLabel(e.delivery_method) + "</span></td>" +
+          tailCells(e, src, dst) + "</tr>";
+      }).join("");
+      return head + extra;
     }).join("");
     rows.innerHTML = html || '<tr><td colspan="13">No fresh quotes right now — check back within the hour.</td></tr>';
+
+    rows.querySelectorAll(".expander").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var open = btn.classList.toggle("open");
+        var extras = rows.querySelectorAll('tr[data-prov-row="' + btn.dataset.prov + '"]');
+        extras.forEach(function (r) { r.classList.toggle("open", open); });
+        btn.textContent = open ? "show less" : "+" + extras.length + " more ways to pay";
+      });
+    });
 
     var noteEl = document.getElementById("note");
     if (comp.note) { noteEl.textContent = comp.note; noteEl.hidden = false; }

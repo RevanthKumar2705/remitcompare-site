@@ -153,6 +153,16 @@ tbody tr.top { background: #f0f9f4; }
 .rank, .num { text-align: right; }
 td.provider { font-weight: 600; }
 td.eff { font-weight: 700; }
+tr.extra { display: none; }
+tr.extra.open { display: table-row; background: #f6faf8; }
+td.provider.sub { padding-left: 30px; color: var(--muted); font-weight: 400; }
+.expander {
+  font: inherit; font-size: 0.76rem; font-weight: 600;
+  color: var(--accent); background: none; border: none;
+  padding: 0 0 0 8px; cursor: pointer; text-decoration: underline;
+}
+.expander:hover { color: var(--accent-dark); }
+.expander.open { color: var(--muted); }
 td.cost { font-variant-numeric: tabular-nums; }
 .cost-low { color: var(--accent); font-weight: 600; }
 .cost-mid { color: var(--gold); }
