@@ -113,6 +113,35 @@ body {
 .midmarket { margin-left: auto; font-size: 0.9rem; color: var(--muted); }
 .midmarket b { color: var(--ink); }
 
+/* ---------- send-now signal ---------- */
+.signal {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 0.92rem;
+  padding: 8px 14px; border-radius: 999px; margin-bottom: 14px;
+  border: 1px solid var(--line);
+}
+.signal-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none; }
+.signal-good    { color: #0e6b44; background: #e3f2e9; border-color: #cbe7d7; }
+.signal-neutral { color: #6a5312; background: #f4ecdf; border-color: #e7d9be; }
+.signal-poor    { color: #8a2f28; background: #f7e6e3; border-color: #edcdc8; }
+
+/* ---------- rate trend chart ---------- */
+.trend { margin: 40px 0; }
+.trend h2 { margin: 0 0 6px; }
+.trend-note { color: var(--muted); font-size: 0.9rem; margin: 0 0 14px; }
+.trend-chart-wrap {
+  margin: 0; background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 12px 14px; overflow-x: auto;
+}
+.trend-chart { color: var(--accent); min-width: 320px; }
+.trend-chart svg { width: 100%; height: auto; display: block; }
+.trend-chart .area { fill: var(--accent); opacity: 0.08; stroke: none; }
+.trend-chart .line { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.trend-chart .dot { fill: currentColor; }
+.trend-chart .val { fill: var(--ink); font-size: 12px; font-weight: 700; }
+.trend-chart .ax { fill: var(--muted); font-size: 11px; }
+.trend-chart .axline { stroke: var(--line); stroke-width: 1; }
+
 /* ---------- best card ---------- */
 .best-card {
   background: var(--card);

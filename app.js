@@ -98,6 +98,67 @@
     }).join("");
   }
 
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function fmtDate(iso) {
+    var p = iso.split("-");
+    return MONTHS[+p[1] - 1] + " " + (+p[2]);
+  }
+
+  // Minimal single-series line chart of the best daily rate. Inline SVG, no
+  // library; recessive axes, direct-labelled latest point.
+  function lineChartSVG(hist) {
+    var W = 720, H = 200, padL = 46, padR = 58, padT = 14, padB = 26;
+    var rates = hist.map(function (h) { return h.best_rate; });
+    var lo = Math.min.apply(null, rates), hi = Math.max.apply(null, rates);
+    var pad = (hi - lo) * 0.18 || 0.1;
+    var ymin = lo - pad, ymax = hi + pad;
+    var n = hist.length;
+    var bottom = H - padB;
+    function x(i) { return padL + (n === 1 ? 0 : i * (W - padL - padR) / (n - 1)); }
+    function y(v) { return padT + (ymax - v) / (ymax - ymin) * (H - padT - padB); }
+
+    var pts = hist.map(function (h, i) { return x(i).toFixed(1) + "," + y(h.best_rate).toFixed(1); });
+    var area = "M" + x(0).toFixed(1) + "," + bottom + " L" + pts.join(" L") +
+               " L" + x(n - 1).toFixed(1) + "," + bottom + " Z";
+    var last = hist[n - 1], lx = x(n - 1), ly = y(last.best_rate);
+
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" role="img" ' +
+      'aria-label="Best rate trend over ' + n + ' days">' +
+      // y reference labels
+      '<text x="' + (padL - 6) + '" y="' + (padT + 4) + '" class="ax" text-anchor="end">' + fmt(ymax, 2) + '</text>' +
+      '<text x="' + (padL - 6) + '" y="' + bottom + '" class="ax" text-anchor="end">' + fmt(ymin, 2) + '</text>' +
+      '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + bottom + '" class="axline"/>' +
+      '<line x1="' + padL + '" y1="' + bottom + '" x2="' + (W - padR) + '" y2="' + bottom + '" class="axline"/>' +
+      // x endpoints
+      '<text x="' + padL + '" y="' + (H - 6) + '" class="ax">' + fmtDate(hist[0].date) + '</text>' +
+      '<text x="' + (W - padR) + '" y="' + (H - 6) + '" class="ax" text-anchor="end">' + fmtDate(last.date) + '</text>' +
+      // series
+      '<path d="' + area + '" class="area"/>' +
+      '<polyline points="' + pts.join(" ") + '" class="line"/>' +
+      '<circle cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="4" class="dot"/>' +
+      '<text x="' + (lx + 8) + '" y="' + (ly + 4) + '" class="val">' + fmt(last.best_rate, 2) + '</text>' +
+      '</svg>';
+  }
+
+  function renderTrend(comp) {
+    var sig = comp.signal, hist = comp.history || [];
+    var badge = document.getElementById("signal");
+    if (sig && sig.label) {
+      badge.hidden = false;
+      badge.className = "signal signal-" + (sig.tone || "neutral");
+      badge.innerHTML = '<span class="signal-dot"></span><span>' + esc(sig.label) + "</span>";
+    } else {
+      badge.hidden = true;
+    }
+    var sec = document.getElementById("trend");
+    if (hist.length < 2) { sec.hidden = true; return; }
+    sec.hidden = false;
+    document.getElementById("trend-note").textContent =
+      "Best effective rate (₹ per $) over the last " + hist.length +
+      " days of data. Higher is better.";
+    document.getElementById("trend-chart").innerHTML = lineChartSVG(hist);
+  }
+
   function render(corridor, amountKey) {
     var comp = corridor.amounts[amountKey];
     var src = sym(corridor.source_currency), dst = sym(corridor.target_currency);
@@ -176,6 +237,7 @@
     else { noteEl.hidden = true; }
 
     renderChart(corridor, amountKey);
+    renderTrend(comp);
   }
 
   fetch("data.json", { cache: "no-store" })
