@@ -110,6 +110,11 @@ body {
 .amounts button[aria-selected="true"] {
   background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
 }
+.nre-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.88rem; font-weight: 600; color: var(--muted); cursor: pointer;
+}
+.nre-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
 .midmarket { margin-left: auto; font-size: 0.9rem; color: var(--muted); }
 .midmarket b { color: var(--ink); }
 

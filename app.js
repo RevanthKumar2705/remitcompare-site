@@ -71,12 +71,10 @@
       '<span class="stat"><b>$0</b> earned from providers</span>';
   }
 
-  function renderChart(corridor, amountKey) {
-    var comp = corridor.amounts[amountKey];
-    var src = sym(corridor.source_currency);
+  function renderChart(amountKey, quotes, src) {
     // best (cheapest) option per provider
     var best = {};
-    (comp.quotes || []).forEach(function (q) {
+    quotes.forEach(function (q) {
       if (q.total_cost_pct == null) return;
       if (!(q.display_name in best) || q.total_cost_pct < best[q.display_name]) {
         best[q.display_name] = q.total_cost_pct;
@@ -159,11 +157,15 @@
     document.getElementById("trend-chart").innerHTML = lineChartSVG(hist);
   }
 
+  var nreOnly = false;
+
   function render(corridor, amountKey) {
     var comp = corridor.amounts[amountKey];
     var src = sym(corridor.source_currency), dst = sym(corridor.target_currency);
     var rows = document.getElementById("rows");
-    var quotes = comp.quotes || [];
+    var allQuotes = comp.quotes || [];
+    var quotes = nreOnly ? allQuotes.filter(function (q) { return q.supports_nre === true; }) : allQuotes;
+    var hiddenByNre = allQuotes.length - quotes.length;
 
     document.getElementById("midmarket").innerHTML = comp.mid_market
       ? "Mid-market rate: <b>" + fmt(comp.mid_market.rate, 4) + "</b> (no-margin benchmark)"
@@ -232,11 +234,17 @@
       });
     });
 
+    var noteParts = [];
+    if (nreOnly) {
+      noteParts.push("Showing only providers confirmed to deposit to NRE accounts" +
+        (hiddenByNre > 0 ? " (" + hiddenByNre + " hidden)" : "") + ".");
+    }
+    if (comp.note) noteParts.push(comp.note);
     var noteEl = document.getElementById("note");
-    if (comp.note) { noteEl.textContent = comp.note; noteEl.hidden = false; }
+    if (noteParts.length) { noteEl.textContent = noteParts.join(" "); noteEl.hidden = false; }
     else { noteEl.hidden = true; }
 
-    renderChart(corridor, amountKey);
+    renderChart(amountKey, quotes, src);
     renderTrend(comp);
   }
 
@@ -265,6 +273,11 @@
         b.textContent = sym(corridor.source_currency) + fmt(key, 0);
         b.addEventListener("click", function () { select(key); });
         bar.appendChild(b);
+      });
+
+      document.getElementById("nre-toggle").addEventListener("change", function (e) {
+        nreOnly = e.target.checked;
+        select(current);
       });
 
       // Hero widget: any typed amount maps to the nearest collected preset.
